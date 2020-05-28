@@ -1,11 +1,21 @@
-import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
-import counterReducer from '../features/counter/counterSlice';
+import { configureStore, ThunkAction, Action, combineReducers } from '@reduxjs/toolkit';
+import systemReducer from '../features/system/systemSlice'
+import tripsReducer from '../features/trips/tripsSlice'
+import activeTripReducer from '../features/activeTrip/activeTripSlice'
+
+export const reducer = {
+  system: systemReducer,
+  trips: tripsReducer,
+  activeTrip: activeTripReducer
+}
 
 export const store = configureStore({
-  reducer: {
-    counter: counterReducer,
-  },
+  reducer,
 });
+
+export const combinedReducer = combineReducers(
+  reducer
+)
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppThunk<ReturnType = void> = ThunkAction<
