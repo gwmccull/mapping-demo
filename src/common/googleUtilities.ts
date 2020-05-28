@@ -1,11 +1,13 @@
 // import { createUnboundedCustomGoogleMarker, markerTypes } from './googleMarker' // need to move markerTypes
 
-type GoogleDirectionsService = google.maps.DirectionsService
-type GoogleDirectionsResult = google.maps.DirectionsResult
-type GoogleDirectionsRequest = google.maps.DirectionsRequest
-type GoogleMarker = google.maps.Marker
-type LatLngLiteral = google.maps.LatLngLiteral
-type LatLng = google.maps.LatLng
+import { resolve } from "dns";
+
+type GoogleDirectionsService = google.maps.DirectionsService;
+type GoogleDirectionsResult = google.maps.DirectionsResult;
+type GoogleDirectionsRequest = google.maps.DirectionsRequest;
+type GoogleMarker = google.maps.Marker;
+type LatLngLiteral = google.maps.LatLngLiteral;
+type LatLng = google.maps.LatLng;
 
 // type GoogleDirectionsRenderer = google.maps.DirectionsRenderer
 
@@ -13,73 +15,97 @@ type LatLng = google.maps.LatLng
  * Google Utilities
  * @module assets/googleUtilities
  * @author Tim Rohrer (@tim_rohrer)
- * 
+ *
  * @desc These utility functions generally depend upon Google services or the map object.
  * In some cases, they are used to remove the Google dependency so generic functions can be
  * invoked.
- * 
+ *
  */
 
 interface GenerateRouteAndStopSolverMarkerPointsParameters {
-    noStopsDesired: number,
-    routeDistanceArray: Array<any>,
-    tripRoutesInfo: Array<any>
+  noStopsDesired: number;
+  routeDistanceArray: Array<any>;
+  tripRoutesInfo: Array<any>;
 }
 
 /**
- * Provides the options necessary to create markers for route and stop solver positions, determined 
+ * Provides the options necessary to create markers for route and stop solver positions, determined
  * in kilometers, along each provided route
  *
  * @param {Number} noStopsDesired - Integer representing the number of stops the user has requested.
  * @param {Array<any>} routeDistanceArray - I don't recall what this is to be clear.
- * @param {Array} tripRoutesInfo - Array of positions, at approximately every kilometer, along 
+ * @param {Array} tripRoutesInfo - Array of positions, at approximately every kilometer, along
  * Google's calculated routes for the selected trip.
  * @returns {Array<google.maps.Marker>} stopSolverMarkersByRoute - Array for routes' stop solver markers
  */
-export function generateRouteAndStopSolverMarkerPoints (
-    noStopsDesired: number, 
-    routeDistanceArray: Array<any>,
-    tripRoutesInfo: Array<any>
-    ): Array<Array<GoogleMarker>> {
-    let kilometersPerDay = 0
-    let stopSolverMarkersByRoute : Array<Array<GoogleMarker>> = []
-    routeDistanceArray.forEach( (routeDistance, routeDistanceIndx) => {
-        kilometersPerDay = Math.round( routeDistance.value / noStopsDesired / 1000 )
-        // let positInfo = tripRoutesInfo[routeDistanceIndx]['startingPt']
-        // let stopSolverPosits = [{
-        //     positInfo: positInfo,
-        //     marker: createUnboundedSimpleGoogleMarker(positInfo.posit)
-        // }
-        /** 
-         * @description aRoutesMarker is used to generate a marker for a specific stop in a route
-         */
-        let aRoutesMarkers : Array<GoogleMarker> = [createUnboundedCustomGoogleMarker(tripRoutesInfo[routeDistanceIndx]['startingPt'].posit, 'starting', null, markerTypes.tripStop, "Beats Me!" )]
-        // window.google.maps.event.addListener(aRoutesMarkers[0], 'click', function() {
-        //     alert("here!")
-        // })
-        for (let i=1; i < noStopsDesired;  i++) {
-            let distanceRef = kilometersPerDay * i
-            // positInfo = tripRoutesInfo[routeDistanceIndx][distanceRef]
-            // stopSolverPosits.push({
-            //     positInfo: positInfo,
-            //     marker: createUnboundedSimpleGoogleMarker(positInfo.posit)
-            // })
-            // debugger
-            aRoutesMarkers.push(createUnboundedCustomGoogleMarker(tripRoutesInfo[routeDistanceIndx][distanceRef].posit, 'stopSolverIcon', null, markerTypes.stopSolverOvernight, i.toString()))
-        }
-        // positInfo = tripRoutesInfo[routeDistanceIndx]['endingPt']
-        // stopSolverPosits.push({
-        //     positInfo: positInfo,
-        //     marker: createUnboundedSimpleGoogleMarker(tripRoutesInfo[routeDistanceIndx]['endingPt'].posit)
-        // })
-        aRoutesMarkers.push(createUnboundedCustomGoogleMarker(tripRoutesInfo[routeDistanceIndx]['endingPt'].posit, 'stopping', null, markerTypes.tripStop, "An Ending!"))
-        stopSolverMarkersByRoute.push(aRoutesMarkers)
-    })
-    return stopSolverMarkersByRoute
+export function generateRouteAndStopSolverMarkerPoints(
+  noStopsDesired: number,
+  routeDistanceArray: Array<any>,
+  tripRoutesInfo: Array<any>
+): Array<Array<GoogleMarker>> {
+  let kilometersPerDay = 0;
+  let stopSolverMarkersByRoute: Array<Array<GoogleMarker>> = [];
+  routeDistanceArray.forEach((routeDistance, routeDistanceIndx) => {
+    kilometersPerDay = Math.round(routeDistance.value / noStopsDesired / 1000);
+    // let positInfo = tripRoutesInfo[routeDistanceIndx]['startingPt']
+    // let stopSolverPosits = [{
+    //     positInfo: positInfo,
+    //     marker: createUnboundedSimpleGoogleMarker(positInfo.posit)
+    // }
+    /**
+     * @description aRoutesMarker is used to generate a marker for a specific stop in a route
+     */
+    let aRoutesMarkers: Array<GoogleMarker> = [
+      createUnboundedCustomGoogleMarker(
+        tripRoutesInfo[routeDistanceIndx]["startingPt"].posit,
+        "starting",
+        null,
+        markerTypes.tripStop,
+        "Beats Me!"
+      ),
+    ];
+    // window.google.maps.event.addListener(aRoutesMarkers[0], 'click', function() {
+    //     alert("here!")
+    // })
+    for (let i = 1; i < noStopsDesired; i++) {
+      let distanceRef = kilometersPerDay * i;
+      // positInfo = tripRoutesInfo[routeDistanceIndx][distanceRef]
+      // stopSolverPosits.push({
+      //     positInfo: positInfo,
+      //     marker: createUnboundedSimpleGoogleMarker(positInfo.posit)
+      // })
+      // debugger
+      aRoutesMarkers.push(
+        createUnboundedCustomGoogleMarker(
+          tripRoutesInfo[routeDistanceIndx][distanceRef].posit,
+          "stopSolverIcon",
+          null,
+          markerTypes.stopSolverOvernight,
+          i.toString()
+        )
+      );
+    }
+    // positInfo = tripRoutesInfo[routeDistanceIndx]['endingPt']
+    // stopSolverPosits.push({
+    //     positInfo: positInfo,
+    //     marker: createUnboundedSimpleGoogleMarker(tripRoutesInfo[routeDistanceIndx]['endingPt'].posit)
+    // })
+    aRoutesMarkers.push(
+      createUnboundedCustomGoogleMarker(
+        tripRoutesInfo[routeDistanceIndx]["endingPt"].posit,
+        "stopping",
+        null,
+        markerTypes.tripStop,
+        "An Ending!"
+      )
+    );
+    stopSolverMarkersByRoute.push(aRoutesMarkers);
+  });
+  return stopSolverMarkersByRoute;
 }
 
 // const googleMapsClient = require('@google/maps').createClient({
-//     key: 
+//     key:
 // });
 
 // export const myPlacesService = () => {
@@ -92,10 +118,7 @@ export function generateRouteAndStopSolverMarkerPoints (
 //     // return new window.google.maps.places.PlacesService(document.createElement('div'));
 // }
 
-
-
-
-// export 
+// export
 /**
  * Animate the provided route.
  *
@@ -131,40 +154,42 @@ export function generateRouteAndStopSolverMarkerPoints (
 // }
 
 /**
- * Extracts all lat/lng points from the Google Route 
+ * Extracts all lat/lng points from the Google Route
  *
  * @param {Object} result - A Google DirectionsResult Object
  * @return {Array} routesPoints - All the latlng points for each route
  * @see {@link googleUtilities#extractOverviewPathFromGoogleRoutes}
  * @todo Validate this still does what I thought it would
  */
-export const extractAllRoutePointsFromGoogleRoutes = (result: google.maps.DirectionsResult) : Array<Array<LatLng>> => {
-    let routes = result.routes
-    let routesPoints: Array<Array<LatLng>> = []
-    routes.map((route, routeIndx) => {
-        routesPoints[routeIndx] = []
-        // Each route may be comprised of multiple legs
-        let legs = route.legs
-        legs.forEach((leg) => {
-            // Each leg is comprised of steps
-            let steps = leg.steps
-            steps.forEach((step, stepIndx) => {
-                // Each step includes an array of latlng object functions. These are where we pull our points from
-                // let lat_lngs = step.lat_lngs
-                routesPoints[routeIndx].push(step.end_location);
-                // let startLat = step.start_location
-                // lat_lngs.forEach((lat_lng) => {
-                //     let coordPoint = {lat: lat_lng.lat(), lng: lat_lng.lng()}
-                //     routesPoints[routeIndx].push(coordPoint)
-                // })
-            })
-        })
-        // return routesPoints
-    })
-    return routesPoints // An array for each route, consisting of all latlng points along that route.
-}
+export const extractAllRoutePointsFromGoogleRoutes = (
+  result: google.maps.DirectionsResult
+): Array<Array<LatLng>> => {
+  let routes = result.routes;
+  let routesPoints: Array<Array<LatLng>> = [];
+  routes.map((route, routeIndx) => {
+    routesPoints[routeIndx] = [];
+    // Each route may be comprised of multiple legs
+    let legs = route.legs;
+    legs.forEach((leg) => {
+      // Each leg is comprised of steps
+      let steps = leg.steps;
+      steps.forEach((step, stepIndx) => {
+        // Each step includes an array of latlng object functions. These are where we pull our points from
+        // let lat_lngs = step.lat_lngs
+        routesPoints[routeIndx].push(step.end_location);
+        // let startLat = step.start_location
+        // lat_lngs.forEach((lat_lng) => {
+        //     let coordPoint = {lat: lat_lng.lat(), lng: lat_lng.lng()}
+        //     routesPoints[routeIndx].push(coordPoint)
+        // })
+      });
+    });
+    // return routesPoints
+  });
+  return routesPoints; // An array for each route, consisting of all latlng points along that route.
+};
 
-// export 
+// export
 /**
  * Extracts lat/lng points from the Google DirectionsResult's overview_path
  *
@@ -187,10 +212,10 @@ export const extractAllRoutePointsFromGoogleRoutes = (result: google.maps.Direct
 //     return routesPoints // An array for each route, consisting of all latlng points along that route.
 // }
 
-// export 
+// export
 /**
  * Repositions the existing marker based on the lat/lng.
- * 
+ *
  * @function
  * @param {object} map - A Google Map.
  * @param {object} marker - Google Map marker.
@@ -203,20 +228,20 @@ export const extractAllRoutePointsFromGoogleRoutes = (result: google.maps.Direct
 // }
 
 /** Section: XX
- * Title: Fetches. 
- * 
- * Description: These asynchronous functionss obtain data from the various Google services 
- * 
- * 
+ * Title: Fetches.
+ *
+ * Description: These asynchronous functionss obtain data from the various Google services
+ *
+ *
  */
 
- /**
+/**
  * Fetches a distance matrix from Google using a client-side map object
  *  and their Distance Matrix Service.
- * 
- * Requires an instance of Google's Distance Matrix Service and a 
- *  trip object. 
- * 
+ *
+ * Requires an instance of Google's Distance Matrix Service and a
+ *  trip object.
+ *
  * For this function, the trip object must include "startingPlaceId"
  *  and "endingPlaceId".
  * CURRENTLY UNUSED
@@ -228,7 +253,7 @@ export const extractAllRoutePointsFromGoogleRoutes = (result: google.maps.Direct
 //             origins: [{placeId: startingPlaceId}],
 //             destinations: [{placeId: endingPlaceId}],
 //             travelMode: 'DRIVING'
-//         }, 
+//         },
 //         (response, status) => {
 //             if (status !== 'OK') {
 //                 reject(status)
@@ -240,7 +265,7 @@ export const extractAllRoutePointsFromGoogleRoutes = (result: google.maps.Direct
 // };
 
 export /**
- * Fetches available routes determined by Google using a cliend-side map object 
+ * Fetches available routes determined by Google using a cliend-side map object
  * and their Directions service.
  *
  * @param {Object} directionsService - Google's Directions service.
@@ -250,66 +275,76 @@ export /**
  * @resolve {Object}
  * @reject {string}
  */
-const fetchGoogleRoutes_OLD = (directionsService: GoogleDirectionsService, startingPlaceId: string, endingPlaceId: string) => {
-    return new Promise<GoogleDirectionsResult>( (resolve, reject) => {
-        let directionsRequest: GoogleDirectionsRequest = {
-            origin: {placeId: startingPlaceId},
-            destination: {placeId: endingPlaceId},
-            // travelMode: google.maps.TravelMode.DRIVING, 
-            // transitOptions: TransitOptions,
-            // drivingOptions: DrivingOptions,
-            // unitSystem: google.maps.UnitSystem.METRIC,
-            // waypoints: [{location: "San Antonio, TX"}],
-            // optimizeWaypoints: Boolean,
-            // provideRouteAlternatives: false,
-            // avoidFerries: Boolean,
-            // avoidHighways: Boolean,
-            // avoidTolls: Boolean,
-            // region: String
+const fetchGoogleRoutes_OLD = (
+  directionsService: GoogleDirectionsService,
+  startingPlaceId: string,
+  endingPlaceId: string
+) => {
+  return new Promise<GoogleDirectionsResult>((resolve, reject) => {
+    let directionsRequest: GoogleDirectionsRequest = {
+      origin: { placeId: startingPlaceId },
+      destination: { placeId: endingPlaceId },
+      // travelMode: google.maps.TravelMode.DRIVING,
+      // transitOptions: TransitOptions,
+      // drivingOptions: DrivingOptions,
+      // unitSystem: google.maps.UnitSystem.METRIC,
+      // waypoints: [{location: "San Antonio, TX"}],
+      // optimizeWaypoints: Boolean,
+      // provideRouteAlternatives: false,
+      // avoidFerries: Boolean,
+      // avoidHighways: Boolean,
+      // avoidTolls: Boolean,
+      // region: String
+    };
+    directionsService.route(
+      directionsRequest,
+      (
+        result: google.maps.DirectionsResult,
+        status: google.maps.DirectionsStatus
+      ) => {
+        if (status === "OK") {
+          console.log("DirectionsResult Object: ", result);
+          resolve(result);
+        } else {
+          reject(status);
         }
-        directionsService.route(directionsRequest,(
-                result: google.maps.DirectionsResult, 
-                status: google.maps.DirectionsStatus
-            ) => {
-            if (status === 'OK') {
-                console.log("DirectionsResult Object: ", result)
-                resolve(result)
-            } 
-                else {
-                    reject(status)
-                }
-            }
-        )
-    })
-}
+      }
+    );
+  });
+};
 
 /** Experimental fetch */
-export async function fetchGoogleRoutes(directionsRequest: GoogleDirectionsRequest) {
-    try {
-        const directionsService = new google.maps.DirectionsService()
-        // console.log("fetch directionsService", directionsService)
-        directionsService.route(directionsRequest, (result, status) => {
-            console.log(result, status)
-            if (status === 'OK') {
-                console.log("Here with data!")
-                return(result)
-            } else { return "WTF!"}
-        })
-     }
-     catch (error) {
-         console.log("Error: ", error)
-         return error
-     }
- }
+export async function fetchGoogleRoutes(
+  directionsRequest: GoogleDirectionsRequest
+) {
+  try {
+    const directionsService = new google.maps.DirectionsService();
+    // console.log("fetch directionsService", directionsService)
+    return new Promise<GoogleDirectionsResult>((resolve, reject) => {
+      directionsService.route(directionsRequest, (result, status) => {
+        console.log(result, status);
+        if (status === "OK") {
+          console.log("Here with data!");
+          return resolve(result);
+        } else {
+          return resolve("WTF!");
+        }
+      });
+    });
+  } catch (error) {
+    console.log("Error: ", error);
+    return error;
+  }
+}
 
 /**
- * 
- * 
+ *
+ *
  * Requires the map object, and both the Directions Service and Renderer. The trip object
- * must contain the Google PlaceIds as startingPlaceId and endingPlaceId. 
- * 
+ * must contain the Google PlaceIds as startingPlaceId and endingPlaceId.
+ *
  * For now, the travelMode is set to 'DRIVING'.
- * Alternative routes are provided. 
+ * Alternative routes are provided.
  */
 // export /**
 //  * Displays the default route between the starting and ending locations for the trip.
@@ -357,20 +392,43 @@ export async function fetchGoogleRoutes(directionsRequest: GoogleDirectionsReque
  * @param {*} resolve - The Promise resolve function
  * @param {*} reject - The Promise reject function
  */
-export const fetchGoogleDetailsForPlaceId = (placeId: string, resolve: Function, reject: Function) => {
-        let placesService = new window.google.maps.places.PlacesService(document.createElement('div'))
-        placesService.getDetails({
-            placeId: placeId,
-            fields: ['address_component', 'adr_address', 'formatted_address', 'geometry', 'icon', 'name', 'permanently_closed', 'photo', 'place_id', 'plus_code', 'type', 'url', 'vicinity']
-        }, (placeDetails, status) => {
-            if (status === 'OK') {
-                resolve(placeDetails)
-            } else {
-                reject(status)
-            }
-        })
-    // })
-}
+export const fetchGoogleDetailsForPlaceId = (
+  placeId: string,
+  resolve: Function,
+  reject: Function
+) => {
+  let placesService = new window.google.maps.places.PlacesService(
+    document.createElement("div")
+  );
+  placesService.getDetails(
+    {
+      placeId: placeId,
+      fields: [
+        "address_component",
+        "adr_address",
+        "formatted_address",
+        "geometry",
+        "icon",
+        "name",
+        "permanently_closed",
+        "photo",
+        "place_id",
+        "plus_code",
+        "type",
+        "url",
+        "vicinity",
+      ],
+    },
+    (placeDetails, status) => {
+      if (status === "OK") {
+        resolve(placeDetails);
+      } else {
+        reject(status);
+      }
+    }
+  );
+  // })
+};
 
 // export /**
 //  * Calculates route distance and duration using Google's previously calculated
@@ -378,7 +436,7 @@ export const fetchGoogleDetailsForPlaceId = (placeId: string, resolve: Function,
 //  *
 //  * @param {Array} steps - Google's route directions/steps
 //  * @returns {Array} totals - Contains the sum distance and time
-//  * 
+//  *
 //  * @deprecated
 //  */
 // const sumGoogleDistanceAndDurationFromRouteSteps = (steps) => {
@@ -441,18 +499,18 @@ export const fetchGoogleDetailsForPlaceId = (placeId: string, resolve: Function,
 //             if (placeDetails.formatted_phone_number) {
 //                 googlePlaceDetails.object.phone = placeDetails.formatted_phone_number
 //             };
-            
+
 //             if (placeDetails.email) {
 //                 googlePlaceDetails.object.email = placeDetails.email
 //             }
-            
+
 //             if (placeDetails.website) {
 //                 googlePlaceDetails.object.website = placeDetails.website
 //             }
 
 //             if (placeDetails.geometry.location.lat) {
 //                 googlePlaceDetails.object.position = {
-//                     lat: placeDetails.geometry.location.lat(), 
+//                     lat: placeDetails.geometry.location.lat(),
 //                     lng: placeDetails.geometry.location.lng()
 //                 };
 //             };
